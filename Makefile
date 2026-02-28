@@ -1,12 +1,12 @@
 NAME	= stegano
 
-CC	= cc
-FLAGS	= -Wall -Wextra -Werror
+CC	= g++
+FLAGS	= -Wall -Wextra -Werror -std=c++17
 
 BLDD	= build
 
-SRCS	= srcs/main.c
-OBJS	= $(patsubst %.c, $(BLDD)/%.o, $(SRCS))
+SRCS	= srcs/main.cpp
+OBJS	= $(patsubst %.cpp, $(BLDD)/%.o, $(SRCS))
 INCS	= -I .
 DEPS	= $(OBJS:.o=.d)
 
@@ -17,7 +17,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(FLAGS) $(OBJS) -o $@
 
-$(BLDD)/%.o: %.c
+$(BLDD)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CC) $(FLAGS) $(INCS) -MMD -c $< -o $@
 
