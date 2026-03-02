@@ -9,30 +9,24 @@ const int BITS_PER_BYTE = 8;
 const int CHANNELS = 3;      
 
 void encode(const std::string& inPath, const std::string& message, const std::string& outPath) {
-    std::ifstream input(inPath, std::ios::binary);
-    std::ofstream output(outPath, std::ios::binary);
+    std::ifstream   input(inPath, std::ios::binary);
+    std::ofstream   output(outPath, std::ios::binary);
     if (!input || !output) {
         std::cerr << "Error: Cannot open files." << std::endl;
         return ;
     }
-
-    // Copy header
     std::vector<char> header(HEADER_SIZE);
     input.read(header.data(), HEADER_SIZE);
     output.write(header.data(), HEADER_SIZE);
-
-    // Encode message length in first 32 pixels
-    size_t len = message.length();
+    size_t  len = message.length();
     for (int i = 0; i < 32; i++) {
         char pixel[CHANNELS];
         input.read(pixel, CHANNELS);
         pixel[0] = (pixel[0] & 0xFE) | ((len >> i) & 1);
         output.write(pixel, CHANNELS);
     }
-
-    // Encode the message itself
-    size_t pos = 0;
-    int bit = 0;
+    size_t  pos = 0;
+    int     bit = 0;
     while (pos < len) {
         char pixel[CHANNELS];
         input.read(pixel, CHANNELS);
@@ -44,39 +38,30 @@ void encode(const std::string& inPath, const std::string& message, const std::st
         }
         output.write(pixel, CHANNELS);
     }
-
-    // Copy the remaining image data
-    char buffer[CHANNELS];
+    char    buffer[CHANNELS];
     while (input.read(buffer, CHANNELS)) {
         output.write(buffer, CHANNELS);
     }
 }
 
 std::string decode(const std::string& path) {
-    std::ifstream input(path, std::ios::binary);
+    std::ifstream   input(path, std::ios::binary);
     if (!input) {
         std::cerr << "Error: Cannot open file." << std::endl;
         exit(1);
     }
-
     input.seekg(HEADER_SIZE); // Skip the header
-
-    // Read message length from the first 32 pixels
-    size_t len = 0;
+    size_t  len = 0;
     for (int i = 0; i < 32; i++) {
         char pixel[CHANNELS];
         input.read(pixel, CHANNELS);
         len |= ((pixel[0] & 1) << i);
     }
-
-    // Decode the message
     std::string message;
     message.reserve(len);
-
-    size_t pos = 0;
-    char byte = 0;
-    int bit = 0;
-
+    size_t  pos = 0;
+    char    byte = 0;
+    int     bit = 0;
     while (pos < len) {
         char pixel[CHANNELS];
         input.read(pixel, CHANNELS);
@@ -89,20 +74,19 @@ std::string decode(const std::string& path) {
             pos++;
         }
     }
-
-    return message;
+    return (message);
 }
 
 std::string crypt(const std::string& input, const std::string& key) {
     std::string output = input;
-    size_t keyLen = key.length();
+    size_t      keyLen = key.length();
     for (size_t i = 0; i < input.length(); i++) {
         output[i] ^= key[i % keyLen];
     }
-    return output;
+    return (output);
 }
 
-int main() {
+int main(void) {
     std::cout << "Welcome to BMP Steganography Tool!" << std::endl;
     std::cout << "1. Encode a message\n2. Decode a message\nChoose an option: ";
     int choice;
@@ -119,7 +103,6 @@ int main() {
         std::getline(std::cin, key);
         std::cout << "Output path: ";
         std::getline(std::cin, outPath);
-
         std::string encryptedMessage = crypt(message, key);
         encode(inPath, encryptedMessage, outPath);
         std::cout << "Message encoded successfully!" << std::endl;
@@ -129,11 +112,9 @@ int main() {
         std::getline(std::cin, path);
         std::cout << "key: ";
         std::getline(std::cin, key);
-
         std::string encryptedMessage = decode(path);
         std::string decryptedMessage = crypt(encryptedMessage, key);
         std::cout << "Decoded Message: " << decryptedMessage << std::endl;
     }
-
-    return 0;
+    return (0);
 }
